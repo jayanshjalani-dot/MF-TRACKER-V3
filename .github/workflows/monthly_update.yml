@@ -1,1 +1,37 @@
+name: Monthly MF Data Refresh
 
+on:
+  schedule:
+    - cron: '0 3 8 * *'   # 08:03 UTC on the 8th of every month
+  workflow_dispatch:        # manual trigger from Actions tab
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh scheme master CSV from AMFI
+        run: python scripts/update_scheme_master.py
+
+      - name: Run monthly data refresh
+        run: python scripts/monthly_update.py
+
+      - name: Commit updated files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/mf_tracker.db data/scheme_master.csv
+          git diff --cached --quiet || git commit -m "chore: monthly refresh $(date +'%Y-%m')"
+          git push
