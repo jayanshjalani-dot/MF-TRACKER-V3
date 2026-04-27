@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.DS_Store
+
+# cache files (regenerated automatically)
+data/cache/
+
+# never commit secrets
+.streamlit/secrets.toml
